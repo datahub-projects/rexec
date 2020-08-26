@@ -6,7 +6,10 @@ setup(
     version=version,
     packages=find_packages(),
     python_requires='>=3',
-    scripts=['bin/rexec'],
+    scripts=['bin/rexec', 'bin/rexec_auth'],
+    package_data={
+        "rexec_auth": ["Dockerfile"]
+    },
     install_requires=[
         "blessings == 1.7",
         "apache-libcloud == 3.1.0",
