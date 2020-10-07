@@ -138,18 +138,10 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
         cloud_args = ""
         if cloudmap:
             if remote:
-# <<<<<<< HEAD
-#                 local_rcred = f"{os.environ['HOME']}/.rexec"
-#                 rcred = " /home/ubuntu/.rexec/"
-#                 cmd = f'rsync -rltzu{0}  -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {local_rcred}/rclone.conf {sshuser}@{url}:{rcred}'. \
-#                             format(get_rsync_v())
-#                 vvprint(cmd)
-# =======
                 rcred = f'{path}/.rexec'
                 cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.rexec/ {3}@{1}:{2}/' \
                     .format(os.path.expanduser('~'), url, path, sshuser, get_rsync_v())
                 vvprint(cmd)
-# >>>>>>> cloudmap_fix
                 os.system(cmd)
             else:
                 rcred = f"{os.environ['HOME']}/.rexec"
@@ -324,14 +316,16 @@ if __name__ == "__main__":
         print ("VERSION:", version)
 
     else:
-
-        if args.pubkey==None:
-            try:
-                f=open(os.path.expanduser("~") + "/.ssh/id_rsa.pub")             #FIXME: a bit cheeky
-                pubkey=f.read()
-                f.close()
-            except:
-                print ("Public key not found in usual place; please specify --pubkey")
+        if args.local:
+            pubkey = None
+        else:
+            if args.pubkey==None:
+                try:
+                    f=open(os.path.expanduser("~") + "/.ssh/id_rsa.pub")             #FIXME: a bit cheeky
+                    pubkey=f.read()
+                    f.close()
+                except:
+                    print ("Public key not found in usual place; please specify --pubkey")
         if args.gpus:
             if args.size == None:
                 size = 'DEFAULT_GPU_SIZE'
