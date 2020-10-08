@@ -243,7 +243,32 @@ def configure(opt):
     elif opt == None:
         y = input("Interactive configuration. Overwrite existing config files?")
         if y.lower()[:1] == 'y':
-            print ("  interactions go here")
+            print ("------------------AWS------------------")
+            access = ""
+            secret = ""
+            region = ""
+            try:
+                f = open(os.path.expanduser("~/.aws/credentials")) # py has trubble w .folders"
+                for row in f.readlines():
+                    tok = row.split("=")
+                    if tok[0].strip() == "aws_access_key_id":
+                        access = tok[1].strip()
+                    if tok[0].strip() == "aws_secret_access_key":
+                        secret = tok[1].strip()
+            except:
+                pass
+
+            try:
+                f = open(os.path.expanduser("~/.aws/config"))
+                for row in f.readlines():
+                    tok = row.split("=")
+                    if tok[0].strip() == "region":
+                        region = tok[1].strip()
+            except:
+                pass
+            print ("access:", access)
+            print ("secret: %s..." % secret[:12])
+            print ("region:", region)
 
     else:
         print ("unknown config option:", opt)
