@@ -206,10 +206,79 @@ def stop_instance_by_url(url, conf):
         vprint ("shutting down node %s" % node)
         stop_server(node)
 
+def configure(opt):
+    v0print("-------------------------------------------------------------")
+    if opt == "list":
+        try:
+            f = open(os.environ['HOME'] + "/.rexec/config.yml")
+            yconf = yaml.load(f, Loader=yaml.FullLoader)
+            f.close()
+            print("config.yml:")
+            pprint(yconf)
+        except:
+            vprint ("config.yml not found")
+        try:
+            f = open(os.environ['HOME'] + "/.rexec/rclone.conf")
+            rconf = f.read()
+            v0print ("=================================")
+            print ("rclone.conf:")
+            print (rconf.rstrip())
+            f.close()
+        except:
+            vprint ("rclone.conf not found")
+        try:
+            v0print("=================================")
+            keys = 0
+            for fn in os.listdir(os.environ['HOME'] + "/.rexec"):
+                if fn.lower()[-5:]==".json":
+                    print ("gcs key file:", fn)
+                    if fn not in rconf:
+                        print ("ERROR: rclone.conf service_account_file must point to the gcs key file")
+                    keys += 1
+            if not keys:
+                print ("ERROR: gcs key file not found")
+        except:
+            print("ERROR: gcs key file or .rexec folder not found")
+
+    elif opt == None:
+        y = input("Interactive configuration. Overwrite existing config files?")
+        if y.lower()[:1] == 'y':
+            print ("------------------AWS------------------")
+            access = ""
+            secret = ""
+            region = ""
+            try:
+                f = open(os.path.expanduser("~/.aws/credentials")) # py has trubble w .folders"
+                for row in f.readlines():
+                    tok = row.split("=")
+                    if tok[0].strip() == "aws_access_key_id":
+                        access = tok[1].strip()
+                    if tok[0].strip() == "aws_secret_access_key":
+                        secret = tok[1].strip()
+            except:
+                pass
+
+            try:
+                f = open(os.path.expanduser("~/.aws/config"))
+                for row in f.readlines():
+                    tok = row.split("=")
+                    if tok[0].strip() == "region":
+                        region = tok[1].strip()
+            except:
+                pass
+            print ("access:", access)
+            print ("secret: %s..." % secret[:12])
+            print ("region:", region)
+
+    else:
+        print ("unknown config option:", opt)
+
+    v0print("-------------------------------------------------------------")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", nargs='?',                   help="Command to run on remote server")
+    parser.add_argument("--config", nargs='?', default=False,   help="Configure rexec")
     parser.add_argument("--sshuser", default="ubuntu",          help="remote server username")
     parser.add_argument("--local", action="store_true",         help="run on local device")
     parser.add_argument("--list-servers", action="store_true",  help="List all associated remote servers")
@@ -282,21 +351,24 @@ if __name__ == "__main__":
         vprint ("%d seconds till action" % (args.delay+.5+t0-time.time()))
         time.sleep(5)
 
-    if not (args.rexecuser or args.uuid or args.url or args.local or args.version):
+    if not (args.rexecuser or args.uuid or args.url or args.local or args.version or args.config != False):
         rxuser = getpass.getuser()
         args.rexecuser = "rexec-" + rxuser
         vprint ("Rexec virtual machine name:", args.rexecuser)
 
-    if args.stop_instance_by_url:
+    if args.config != False:
+        configure(args.config)
+
+    elif args.stop_instance_by_url:
         stop_instance_by_url(args.stop_instance_by_url, args_conf)
 
-    elif args.list_servers:     #note this is different than --shutdown 0 -- we just shut down without running
+    elif args.list_servers:
         v0print ("-------------------------------------------------------------\nSERVERS associated with %s:" % args.rexecuser)
         for s in list_servers(args.rexecuser, args_conf, pretty=True):
             print (s)
         v0print ("-------------------------------------------------------------")
 
-    elif args.shutdown == None:
+    elif args.shutdown == None:     #note this is different than --shutdown 0 -- we just shut down without running
         v0print ("-------------------------------------------------------------")
         for s in list_servers(args.rexecuser, args_conf):
             yes = input("Stopping (warm shutdown) %s %s are you sure?" % (s.name, s.public_ips))
