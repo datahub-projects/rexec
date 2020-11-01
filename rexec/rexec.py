@@ -141,14 +141,16 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
                 rcred = f'{path}/.rexec'
                 cmd = 'rsync -rltzu{4} --relative -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error" {0}/./.rexec/ {3}@{1}:{2}/' \
                     .format(os.path.expanduser('~'), url, path, sshuser, get_rsync_v())
+                print ("cmd => " + str(cmd))
                 vvprint(cmd)
                 os.system(cmd)
             else:
                 rcred = f"{os.environ['HOME']}/.rexec"
 
             cloud_args = f"-v {rcred}:/root/.config/rclone --privileged"
+            print ("cloud_args => " + str(cloud_args))
             cloud, host = cloudmap.split(":")
-            args = f"bash -c 'mkdir -p {host}; rclone mount {cloud}: {host} & sleep 3; {args}; umount {host}'"
+            args = f"bash -c 'mkdir -p {host}; rclone mount --vfs-cache-mode writes {cloud}: {host} & sleep 3; {args}; umount {host}'"
 
         vprint ("Running docker container")
         cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/rexec/work {6} {0} {1}".format(DEFAULT_IMAGE,
