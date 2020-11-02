@@ -18,7 +18,7 @@ or
 
 `pip install -e git+ssh://git@github.com/datahub-projects/rexec#egg=rexec`
 
-# Configuration
+# Configuring Cloud Service Providers for Ephemeral Virtual Machines 
 
 Our configuration is currently manual. You will need to do the following: 
 
@@ -47,6 +47,16 @@ mygoogle:
   project: <Google Cloud Project ID>
   default_image: rexec-nogpu
 ```
+
+# Configuring Cloud Service Providers for Cloud Storage Access
+
+Using cloud storage is optional but can provide faster performance, better protection of your data and easier sharing of work than using local files.
+
+We use [rclone](https://rclone.org/) for configuring cloud storage providers. After configuring a provider with [rclone config](https://rclone.org/commands/rclone_config/), copy the `rclone.conf` to the ~/.rexec folder and then you can read and write from this drive by using `--cloudmap <rclone-provider>:<local-folder>` syntax.
+
+For example, if you have a provider named `googledrive`, you can list the files from an ephemeral VM with this command => `rexec --cloudmap googledrive:googledrive ls googledrive`
+
+TODO: provide an example with timing where using cloud storage provides a large performance improvement.
 
 # Run `rexec` tests
 
