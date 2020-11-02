@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, sys, argparse, subprocess, time, traceback, json, getpass
+import os, sys, argparse, subprocess, time, traceback, json, getpass, platform
 #
 # the BDFL does not admire scripts which are also importable modules
 # well, frack him -- this is how we roll
@@ -150,7 +150,8 @@ def rexec(args, sshuser=None, url=None, uuid=None, rxuser=None, gpus = "", ports
             cloud_args = f"-v {rcred}:/root/.config/rclone --privileged"
             print ("cloud_args => " + str(cloud_args))
             cloud, host = cloudmap.split(":")
-            args = f"bash -c 'mkdir -p {host}; rclone mount --vfs-cache-mode writes {cloud}: {host} & sleep 3; {args}; umount {host}'"
+
+            args = f"bash -c 'mkdir -p {host}; rclone mount --vfs-cache-mode writes --vfs-write-back 0 {cloud}: {host} & sleep 3; {args}; umount {host}'"
 
         vprint ("Running docker container")
         cmd = "docker {3} run {4} {5} --rm -ti -v {2}:/home/rexec/work {6} {0} {1}".format(DEFAULT_IMAGE,
