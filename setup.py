@@ -12,7 +12,7 @@ setup(
         "apache-libcloud == 3.1.0",
     	"cryptography==3.0",
         "easydict==1.9",
-        "PyYAML==5.3.1"
+        "PyYAML==5.4"
     ],
     include_package_data=True
 )
